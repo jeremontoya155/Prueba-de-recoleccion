@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración del Bot de Instagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center">Configuración del Bot de Instagram</h2>
+        <form id="configForm" class="card p-4 shadow">
+            <div class="mb-3">
+                <label class="form-label">Usuario de Instagram</label>
+                <input type="text" id="username" class="form-control" placeholder="Ingrese su usuario">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" id="password" class="form-control" placeholder="Ingrese su contraseña">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Cuentas objetivo (separadas por coma)</label>
+                <input type="text" id="targetAccounts" class="form-control" placeholder="Ej: cuenta1, cuenta2">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Palabras clave (separadas por coma)</label>
+                <input type="text" id="keywords" class="form-control" placeholder="Ej: Marketing, Digital">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Límite de seguidores</label>
+                <input type="number" id="maxFollowers" class="form-control" value="250">
+            </div>
+            <div class="text-center">
+                <button type="button" class="btn btn-primary" onclick="guardarConfig()">Guardar Configuración</button>
+                <button type="button" class="btn btn-success" onclick="enviarConfig()">Enviar</button>
+            </div>
+            <button type="button" class="btn btn-info" onclick="descargarJSON()">Descargar JSON</button>
+        </form>
+    </div>
+
+    <script>
+        // Cargar configuración guardada
+        document.addEventListener("DOMContentLoaded", () => {
+            const config = JSON.parse(localStorage.getItem("botConfig"));
+            if (config) {
+                document.getElementById("username").value = config.username;
+                document.getElementById("password").value = config.password;
+                document.getElementById("targetAccounts").value = config.targetAccounts.join(", ");
+                document.getElementById("keywords").value = config.keywords.join(", ");
+                document.getElementById("maxFollowers").value = config.maxFollowers;
+            }
+        });
+        function descargarJSON() {
+        window.location.href = "http://127.0.0.1:5000/descargar-json";
+    }
+        // Guardar configuración en LocalStorage
+        function guardarConfig() {
+            const config = {
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value,
+                targetAccounts: document.getElementById("targetAccounts").value.split(",").map(item => item.trim()),
+                keywords: document.getElementById("keywords").value.split(",").map(item => item.trim()),
+                maxFollowers: parseInt(document.getElementById("maxFollowers").value)
+            };
+            localStorage.setItem("botConfig", JSON.stringify(config));
+            alert("Configuración guardada exitosamente.");
+        }
+// Enviar configuración al backend e iniciar el proceso
+function enviarConfig() {
+    const config = {
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+        targetAccounts: document.getElementById("targetAccounts").value.split(",").map(item => item.trim()),
+        keywords: document.getElementById("keywords").value.split(",").map(item => item.trim()),
+        maxFollowers: parseInt(document.getElementById("maxFollowers").value)
+    };
+
+    fetch("http://127.0.0.1:5000/configurar-bot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert("✅ " + data.mensaje);
+    })
+    .catch(error => {
+        alert("❌ Error al enviar configuración: " + error);
+    });
+}
+
+    </script>
+</body>
+</html>
